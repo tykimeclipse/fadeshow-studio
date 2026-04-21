@@ -17,20 +17,35 @@ function App() {
   const handleDimTimeoutRef = useRef(null);
   const shellRef = useRef(null);
 
-  const slides = useMemo(
-    () => [
-      { id: 1, src: "/images/slide-01.jpg", alt: "slide 1" },
-      { id: 2, src: "/images/slide-02.jpg", alt: "slide 2" },
-      { id: 3, src: "/images/slide-03.jpg", alt: "slide 3" },
-      { id: 4, src: "/images/slide-04.jpg", alt: "slide 4" },
-      { id: 5, src: "/images/slide-05.jpg", alt: "slide 5" },
-      { id: 6, src: "/images/slide-06.jpg", alt: "slide 6" },
-    ],
-    []
-  );
+  const imageModules = import.meta.glob("./assets/images/*.{png,jpg,jpeg,webp,avif,gif,svg}", {
+    eager: true,
+    import: "default",
+  });
 
-  const currentSlide = slides[currentIndex];
-  const previousSlide = previousIndex !== null ? slides[previousIndex] : null;
+  const slides = useMemo(() => {
+    return Object.entries(imageModules)
+      .sort(([pathA], [pathB]) =>
+        pathA.localeCompare(pathB, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        })
+      )
+      .map(([path, src], index) => {
+        const fileName = path.split("/").pop() || `slide-${index + 1}`;
+        return {
+          id: index + 1,
+          src,
+          alt: fileName,
+          fileName,
+        };
+      });
+  }, [imageModules]);
+
+  const currentSlide = slides[currentIndex] ?? null;
+  const previousSlide =
+    previousIndex !== null && slides[previousIndex]
+      ? slides[previousIndex]
+      : null;
 
   const clearTransitionTimer = useCallback(() => {
     if (transitionTimeoutRef.current) {
@@ -67,6 +82,7 @@ function App() {
 
   const beginTransitionTo = useCallback(
     (nextIndex) => {
+      if (!slides.length) return;
       if (nextIndex === currentIndex) return;
 
       clearTransitionTimer();
@@ -91,29 +107,25 @@ function App() {
         transitionTimeoutRef.current = null;
       }, safeTransitionMs);
     },
-    [clearTransitionTimer, currentIndex, transitionDuration, transitionType]
+    [clearTransitionTimer, currentIndex, slides.length, transitionDuration, transitionType]
   );
 
   const goToNext = useCallback(() => {
+    if (!slides.length) return;
     const nextIndex = (currentIndex + 1) % slides.length;
     beginTransitionTo(nextIndex);
   }, [beginTransitionTo, currentIndex, slides.length]);
 
   const goToPrev = useCallback(() => {
+    if (!slides.length) return;
     const nextIndex = (currentIndex - 1 + slides.length) % slides.length;
     beginTransitionTo(nextIndex);
   }, [beginTransitionTo, currentIndex, slides.length]);
 
-  const goToIndex = useCallback(
-    (index) => {
-      beginTransitionTo(index);
-    },
-    [beginTransitionTo]
-  );
-
   const togglePlay = useCallback(() => {
+    if (!slides.length) return;
     setIsPlaying((prev) => !prev);
-  }, []);
+  }, [slides.length]);
 
   const toggleFullscreen = useCallback(async () => {
     try {
@@ -128,6 +140,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!slides.length) return;
     if (!isPlaying) return;
 
     const safeDuration = Math.max(1, Number(slideDuration) || 3);
@@ -138,6 +151,20 @@ function App() {
 
     return () => window.clearInterval(intervalId);
   }, [beginTransitionTo, currentIndex, isPlaying, slideDuration, slides.length]);
+
+  useEffect(() => {
+    if (!slides.length) {
+      setCurrentIndex(0);
+      setPreviousIndex(null);
+      setIsPlaying(false);
+      return;
+    }
+
+    if (currentIndex > slides.length - 1) {
+      setCurrentIndex(0);
+      setPreviousIndex(null);
+    }
+  }, [currentIndex, slides.length]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -247,19 +274,37 @@ function App() {
           onMouseMove={wakeHandle}
         >
           <div className={stageClassName} style={transitionStyle}>
-            {previousSlide && (
-              <img
-                className="slide-image slide-image-previous"
-                src={previousSlide.src}
-                alt={previousSlide.alt}
-              />
+            {slides.length === 0 ? (
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontSize: "20px",
+                }}
+              >
+                src/assets/images 폴더에 이미지를 넣어 주세요.
+              </div>
+            ) : (
+              <>
+                {previousSlide && (
+                  <img
+                    className="slide-image slide-image-previous"
+                    src={previousSlide.src}
+                    alt={previousSlide.alt}
+                  />
+                )}
+                <img
+                  key={currentSlide.id}
+                  className="slide-image slide-image-current"
+                  src={currentSlide.src}
+                  alt={currentSlide.alt}
+                />
+              </>
             )}
-            <img
-              key={currentSlide.id}
-              className="slide-image slide-image-current"
-              src={currentSlide.src}
-              alt={currentSlide.alt}
-            />
           </div>
         </section>
 
@@ -369,24 +414,6 @@ function App() {
           </div>
 
           <div className="drawer-section">
-            <h3>슬라이드 목록</h3>
-            <div className="slide-list">
-              {slides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  type="button"
-                  className={`slide-list-item ${
-                    index === currentIndex ? "is-active" : ""
-                  }`}
-                  onClick={() => goToIndex(index)}
-                >
-                  {slide.src.replace("/images/", "")}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="drawer-section">
             <h3>단축키</h3>
             <p className="help-text">
               스페이스바: 재생/일시정지
@@ -401,7 +428,7 @@ function App() {
             <h3>상태</h3>
             <p className="help-text">
               현재 상태: {isPlaying ? "자동재생 중" : "일시정지"} / 슬라이드{" "}
-              {currentIndex + 1} / {slides.length} /{" "}
+              {slides.length === 0 ? 0 : currentIndex + 1} / {slides.length} /{" "}
               {isFullscreen ? "전체화면" : "일반화면"}
             </p>
           </div>
