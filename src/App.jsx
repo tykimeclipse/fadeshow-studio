@@ -301,7 +301,6 @@ function App() {
                   />
                 )}
                 <img
-                  key={currentSlide.id}
                   className="slide-image slide-image-current"
                   src={currentSlide.src}
                   alt={currentSlide.alt}
