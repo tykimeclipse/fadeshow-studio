@@ -80,35 +80,38 @@ function App() {
     startHandleDimTimer();
   }, [isPanelOpen, startHandleDimTimer]);
 
-  const beginTransitionTo = useCallback(
-    (nextIndex) => {
-      if (!slides.length) return;
-      if (nextIndex === currentIndex) return;
+  const beginTransitionTo = (nextIndex) => {
+  if (!slides.length) return;
+  if (nextIndex === currentIndex) return;
 
-      clearTransitionTimer();
+  clearTransitionTimer();
 
-      if (transitionType === "none" || transitionDuration <= 0) {
-        setPreviousIndex(null);
-        setIsTransitioning(false);
-        setCurrentIndex(nextIndex);
-        return;
-      }
+  if (transitionType === "none" || transitionDuration <= 0) {
+    setPreviousIndex(null);
+    setIsTransitioning(false);
+    setCurrentIndex(nextIndex);
+    return;
+  }
 
-      setPreviousIndex(currentIndex);
-      setCurrentIndex(nextIndex);
+  setIsTransitioning(false);
+  setPreviousIndex(currentIndex);
+  setCurrentIndex(nextIndex);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       setIsTransitioning(true);
+    });
+  });
 
-      const safeTransitionMs =
-        Math.max(0, Number(transitionDuration) || 0) * 1000;
+  const safeTransitionMs =
+    Math.max(0, Number(transitionDuration) || 0) * 1000;
 
-      transitionTimeoutRef.current = window.setTimeout(() => {
-        setIsTransitioning(false);
-        setPreviousIndex(null);
-        transitionTimeoutRef.current = null;
-      }, safeTransitionMs);
-    },
-    [clearTransitionTimer, currentIndex, slides.length, transitionDuration, transitionType]
-  );
+  transitionTimeoutRef.current = window.setTimeout(() => {
+    setIsTransitioning(false);
+    setPreviousIndex(null);
+    transitionTimeoutRef.current = null;
+  }, safeTransitionMs);
+};
 
   const goToNext = useCallback(() => {
     if (!slides.length) return;

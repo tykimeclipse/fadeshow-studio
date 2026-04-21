@@ -73,6 +73,8 @@ img {
   height: 100%;
   object-fit: cover;
   background: #000;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .slide-image-current {
@@ -86,91 +88,57 @@ img {
 .slide-surface.mode-none .slide-image-current,
 .slide-surface.mode-none .slide-image-previous {
   opacity: 1;
-  animation: none;
   transition: none;
 }
 
+/* 크로스페이드 */
 .slide-surface.mode-crossfade .slide-image-current,
-.slide-surface.mode-crossfade .slide-image-previous,
-.slide-surface.mode-fade .slide-image-current,
-.slide-surface.mode-fade .slide-image-previous {
-  animation-duration: var(--transition-duration);
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
+.slide-surface.mode-crossfade .slide-image-previous {
+  transition: opacity var(--transition-duration) ease-in-out;
 }
 
-.slide-surface.mode-crossfade .slide-image-current,
-.slide-surface.mode-crossfade .slide-image-previous,
-.slide-surface.mode-fade .slide-image-current,
-.slide-surface.mode-fade .slide-image-previous {
-  animation-name: none;
+.slide-surface.mode-crossfade .slide-image-current {
+  opacity: 0;
+}
+
+.slide-surface.mode-crossfade .slide-image-previous {
+  opacity: 1;
 }
 
 .slide-surface.mode-crossfade.is-transitioning .slide-image-current {
-  animation-name: crossfadeCurrent;
+  opacity: 1;
 }
 
 .slide-surface.mode-crossfade.is-transitioning .slide-image-previous {
-  animation-name: crossfadePrevious;
+  opacity: 0;
+}
+
+/* 페이드 */
+.slide-surface.mode-fade .slide-image-current,
+.slide-surface.mode-fade .slide-image-previous {
+  transition: opacity calc(var(--transition-duration) * 0.5) ease-in-out;
+}
+
+.slide-surface.mode-fade .slide-image-current {
+  opacity: 0;
+  transition-delay: calc(var(--transition-duration) * 0.5);
+}
+
+.slide-surface.mode-fade .slide-image-previous {
+  opacity: 1;
+  transition-delay: 0s;
 }
 
 .slide-surface.mode-fade.is-transitioning .slide-image-current {
-  opacity: 0;
-  animation-name: fadeInSecondHalf;
+  opacity: 1;
 }
 
 .slide-surface.mode-fade.is-transitioning .slide-image-previous {
-  opacity: 1;
-  animation-name: fadeOutFirstHalf;
+  opacity: 0;
+  transition-delay: 0s;
 }
 
-@keyframes crossfadeCurrent {
-  0% {
-    opacity: 0;
-  }
 
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes crossfadePrevious {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes fadeOutFirstHalf {
-  0% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes fadeInSecondHalf {
-  0% {
-    opacity: 0;
-  }
-
-  50% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
 
 .settings-drawer {
   position: absolute;
