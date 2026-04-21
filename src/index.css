@@ -1,0 +1,366 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
+  background: #f4f6f8;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background: #edf1f5;
+  color: #1f2937;
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+}
+
+.slideshow-shell {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.slide-stage {
+  width: 100%;
+  height: 100vh;
+  padding: 0;
+}
+
+.slide-surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  --transition-duration: 1s;
+}
+
+.slide-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.slide-image-current {
+  z-index: 2;
+}
+
+.slide-image-previous {
+  z-index: 1;
+}
+
+.slide-surface.mode-none .slide-image-current,
+.slide-surface.mode-none .slide-image-previous {
+  opacity: 1;
+  animation: none;
+  transition: none;
+}
+
+.slide-surface.mode-crossfade .slide-image-current,
+.slide-surface.mode-crossfade .slide-image-previous,
+.slide-surface.mode-fade .slide-image-current,
+.slide-surface.mode-fade .slide-image-previous {
+  animation-duration: var(--transition-duration);
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.slide-surface.mode-crossfade .slide-image-current,
+.slide-surface.mode-crossfade .slide-image-previous,
+.slide-surface.mode-fade .slide-image-current,
+.slide-surface.mode-fade .slide-image-previous {
+  animation-name: none;
+}
+
+.slide-surface.mode-crossfade.is-transitioning .slide-image-current {
+  animation-name: crossfadeCurrent;
+}
+
+.slide-surface.mode-crossfade.is-transitioning .slide-image-previous {
+  animation-name: crossfadePrevious;
+}
+
+.slide-surface.mode-fade.is-transitioning .slide-image-current {
+  opacity: 0;
+  animation-name: fadeInSecondHalf;
+}
+
+.slide-surface.mode-fade.is-transitioning .slide-image-previous {
+  opacity: 1;
+  animation-name: fadeOutFirstHalf;
+}
+
+@keyframes crossfadeCurrent {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes crossfadePrevious {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOutFirstHalf {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInSecondHalf {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.settings-drawer {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: min(360px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transform: translateX(0);
+  transition: transform 260ms ease, opacity 260ms ease;
+  z-index: 20;
+}
+
+.settings-drawer:not(.is-open) {
+  transform: translateX(calc(-100% - 24px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.drawer-header h2 {
+  margin: 0;
+  font-size: 26px;
+  color: #0f172a;
+}
+
+.drawer-header p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.drawer-section {
+  padding: 16px;
+  margin-bottom: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.drawer-section h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field span {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.88);
+  color: #0f172a;
+  outline: none;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.panel-handle {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+.primary-button {
+  background: #2563eb;
+  color: white;
+}
+
+.secondary-button {
+  background: rgba(226, 232, 240, 0.95);
+  color: #0f172a;
+}
+
+.ghost-button {
+  background: rgba(226, 232, 240, 0.9);
+  color: #334155;
+  white-space: nowrap;
+}
+
+.help-text {
+  margin: 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.panel-handle {
+  position: absolute;
+  top: 24px;
+  left: 20px;
+  z-index: 15;
+  background: rgba(255, 255, 255, 0.88);
+  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  transition:
+    opacity 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.panel-handle.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel-handle.is-dimmed {
+  opacity: 0.16;
+}
+
+.slide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slide-list-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #334155;
+}
+
+.slide-list-item.is-active {
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(219, 234, 254, 0.9);
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .settings-drawer {
+    top: 12px;
+    left: 12px;
+    width: min(340px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    border-radius: 20px;
+  }
+
+  .panel-handle {
+    top: 16px;
+    left: 12px;
+  }
+}
